@@ -60,7 +60,7 @@ public class ProductServiceImp implements ProductService {
         // Filtro de busqueda category
         if(category != null && !category.isEmpty()) {
             filteredProducts = filteredProducts.stream()
-                    .filter(productEntity -> productEntity.getSubCategoryEntity().getSub_category().equalsIgnoreCase(category) ||
+                    .filter(productEntity -> productEntity.getSubCategoryEntity().getSubcategory().equalsIgnoreCase(category) ||
                             productEntity.getCategoryEntity().getCategory().equalsIgnoreCase(category))
                     .collect(Collectors.toList());
         }

@@ -1,7 +1,5 @@
-package back.ciriu.models.Response;
+package back.ciriu.models.Request;
 
-import back.ciriu.entities.CategoryEntity;
-import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -10,15 +8,11 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class SubCategoryResponse {
-
-    @NotNull
-    private Long id;
+public class SubCategoryRequest {
 
     @NotNull
     private String subcategory;
 
-
     @NotNull
-    private String category;
+    private Long id_category;
 }

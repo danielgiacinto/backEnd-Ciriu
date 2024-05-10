@@ -1,14 +1,12 @@
 package back.ciriu.controllers;
 
 import back.ciriu.entities.SubCategoryEntity;
+import back.ciriu.models.Request.SubCategoryRequest;
 import back.ciriu.models.Response.SubCategoryResponse;
 import back.ciriu.services.SubCategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -27,5 +25,15 @@ public class SubCategoryController {
     @GetMapping("/{category}")
     public ResponseEntity<List<SubCategoryResponse>> getAllSubCategoriesByCategory(@PathVariable String category) {
         return ResponseEntity.ok(subCategoryService.getAllSubCategoriesByCategory(category));
+    }
+
+    @PostMapping("/new")
+    public ResponseEntity<SubCategoryResponse> newSubCategory(@RequestBody SubCategoryRequest request) {
+        return ResponseEntity.ok(subCategoryService.newSubCategory(request));
+    }
+
+    @PutMapping("/edit/{id}")
+    public ResponseEntity<SubCategoryResponse> newSubCategory(@PathVariable Long id, @RequestBody String sub_category) {
+        return ResponseEntity.ok(subCategoryService.editSubCategory(id, sub_category));
     }
 }

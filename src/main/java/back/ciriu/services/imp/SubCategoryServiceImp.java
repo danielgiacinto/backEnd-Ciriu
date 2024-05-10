@@ -2,6 +2,7 @@ package back.ciriu.services.imp;
 
 import back.ciriu.entities.CategoryEntity;
 import back.ciriu.entities.SubCategoryEntity;
+import back.ciriu.models.Request.SubCategoryRequest;
 import back.ciriu.models.Response.SubCategoryResponse;
 import back.ciriu.repositories.CategoryRepository;
 import back.ciriu.repositories.SubCategoryJpaRepository;
@@ -22,6 +23,7 @@ public class SubCategoryServiceImp implements SubCategoryService {
     @Autowired
     private CategoryRepository categoryRepository;
 
+
     @Override
     public List<SubCategoryResponse> getAllSubCategories() {
         List<SubCategoryEntity> subCategoryEntities = subCategoryJpaRepository.findAll();
@@ -31,7 +33,7 @@ public class SubCategoryServiceImp implements SubCategoryService {
             subCategoryResponse.setId(e.getId());
             CategoryEntity category = categoryRepository.getReferenceById(e.getId_category().getId());
             subCategoryResponse.setCategory(category.getCategory());
-            subCategoryResponse.setSub_category(e.getSub_category());
+            subCategoryResponse.setSubcategory(e.getSubcategory());
             subCategoryResponses.add(subCategoryResponse);
         }
         return subCategoryResponses;
@@ -47,10 +49,64 @@ public class SubCategoryServiceImp implements SubCategoryService {
                 subCategoryResponse.setId(e.getId());
                 CategoryEntity categoryEntity = categoryRepository.getReferenceById(e.getId_category().getId());
                 subCategoryResponse.setCategory(categoryEntity.getCategory());
-                subCategoryResponse.setSub_category(e.getSub_category());
+                subCategoryResponse.setSubcategory(e.getSubcategory());
                 subCategoryResponses.add(subCategoryResponse);
             }
         }
         return subCategoryResponses;
+    }
+
+    @Override
+    public SubCategoryResponse newSubCategory(SubCategoryRequest request) {
+        try {
+            SubCategoryEntity subCategoryEntity = subCategoryJpaRepository.getBySubcategory(request.getSubcategory().toLowerCase());
+            if(subCategoryEntity != null){
+                throw new RuntimeException("Esta sub categoria ya existe");
+            } else {
+                SubCategoryEntity subCategory = new SubCategoryEntity();
+                subCategory.setSubcategory(request.getSubcategory().toLowerCase());
+                CategoryEntity category = categoryRepository.getReferenceById(request.getId_category());
+                if(category != null){
+                    subCategory.setId_category(category);
+                } else {
+                    throw new RuntimeException("La categoria principal no existe");
+                }
+                SubCategoryEntity saved = subCategoryJpaRepository.save(subCategory);
+                SubCategoryResponse response = new SubCategoryResponse();
+                response.setId(saved.getId());
+                CategoryEntity categoryEntity = categoryRepository.getReferenceById(request.getId_category());
+                response.setCategory(categoryEntity.getCategory());
+                response.setSubcategory(saved.getSubcategory());
+                return response;
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Error, " + e.getMessage());
+        }
+    }
+
+    @Override
+    public SubCategoryResponse editSubCategory(Long id, String sub_category) {
+        try {
+            SubCategoryEntity subCategoryEntity = subCategoryJpaRepository.getReferenceById(id);
+            if(subCategoryEntity == null){
+                throw new RuntimeException("No existe esta sub categoria");
+            } else {
+                SubCategoryEntity subCategory = subCategoryJpaRepository.getBySubcategory(sub_category.toLowerCase());
+                if(subCategory != null) {
+                    throw new RuntimeException("Ya existe esa sub categoria");
+                } else {
+                    subCategoryEntity.setSubcategory(sub_category.toLowerCase());
+                    SubCategoryEntity saved = subCategoryJpaRepository.save(subCategoryEntity);
+                    SubCategoryResponse response = new SubCategoryResponse();
+                    response.setId(saved.getId());
+                    CategoryEntity categoryEntity = categoryRepository.getReferenceById(saved.getId_category().getId());
+                    response.setCategory(categoryEntity.getCategory());
+                    response.setSubcategory(saved.getSubcategory());
+                    return response;
+                }
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Error, " + e.getMessage());
+        }
     }
 }

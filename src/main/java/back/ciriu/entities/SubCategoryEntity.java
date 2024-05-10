@@ -17,7 +17,7 @@ public class SubCategoryEntity {
     private Long id;
 
     @Column
-    private String sub_category;
+    private String subcategory;
 
 
     @ManyToOne

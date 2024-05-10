@@ -21,7 +21,7 @@ public class ProductResponseDto {
     private String category;
 
     @NotNull
-    private String sub_category;
+    private String subcategory;
 
     @NotNull
     private String description;
