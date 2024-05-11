@@ -15,5 +15,5 @@ public interface BrandService {
 
     BrandEntity newBrand(BrandRequest request);
 
-    BrandEntity editBrand(Long id, BrandRequest brandRequest);
+    BrandEntity editBrand(Long id, String brandRequest);
 }

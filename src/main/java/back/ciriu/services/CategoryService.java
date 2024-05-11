@@ -13,5 +13,5 @@ public interface CategoryService {
 
     CategoryEntity newCategory(CategoryRequestDto requestDto);
 
-    CategoryEntity editCategory(Long id, CategoryRequestDto requestDto);
+    CategoryEntity editCategory(Long id, String requestDto);
 }

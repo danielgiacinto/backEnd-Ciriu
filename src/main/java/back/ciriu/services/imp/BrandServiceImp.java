@@ -35,11 +35,11 @@ public class BrandServiceImp implements BrandService {
     }
 
     @Override
-    public BrandEntity editBrand(Long id, BrandRequest brandRequest) {
+    public BrandEntity editBrand(Long id, String brandRequest) {
         try{
             BrandEntity brand = brandJpaRepository.getReferenceById(id);
             if(brand != null){
-                brand.setBrand(brandRequest.getBrand().toLowerCase());
+                brand.setBrand(brandRequest.toLowerCase());
                 return brandJpaRepository.save(brand);
             } else {
                 throw new RuntimeException("No existe esa marca");

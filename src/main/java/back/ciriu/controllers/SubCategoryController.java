@@ -33,7 +33,7 @@ public class SubCategoryController {
     }
 
     @PutMapping("/edit/{id}")
-    public ResponseEntity<SubCategoryResponse> newSubCategory(@PathVariable Long id, @RequestBody String sub_category) {
-        return ResponseEntity.ok(subCategoryService.editSubCategory(id, sub_category));
+    public ResponseEntity<SubCategoryResponse> newSubCategory(@PathVariable Long id, @RequestBody String subcategory) {
+        return ResponseEntity.ok(subCategoryService.editSubCategory(id, subcategory));
     }
 }

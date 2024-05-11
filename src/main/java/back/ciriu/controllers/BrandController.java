@@ -29,7 +29,7 @@ public class BrandController {
     }
 
     @PutMapping("/edit/{id}")
-    public ResponseEntity<BrandEntity> editBrand(@PathVariable Long id, @RequestBody @Valid BrandRequest request){
+    public ResponseEntity<BrandEntity> editBrand(@PathVariable Long id, @RequestBody @Valid String request){
         return ResponseEntity.ok(brandService.editBrand(id, request));
     }
 }

@@ -39,11 +39,11 @@ public class CategoryServiceImp implements CategoryService {
     }
 
     @Override
-    public CategoryEntity editCategory(Long id, CategoryRequestDto requestDto) {
+    public CategoryEntity editCategory(Long id, String requestDto) {
         try{
             CategoryEntity category = categoryRepository.getReferenceById(id);
             if(category != null){
-                category.setCategory(requestDto.getCategory().toLowerCase());
+                category.setCategory(requestDto.toLowerCase());
                 return categoryRepository.save(category);
             } else {
                 throw new RuntimeException("No existe esa categoria");
