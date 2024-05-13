@@ -26,7 +26,7 @@ public class ToyRequestDto {
     private Long category;
 
     @NotNull
-    private Long sub_category;
+    private Long subcategory;
 
     @NotNull
     private String description;

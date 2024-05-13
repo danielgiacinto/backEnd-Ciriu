@@ -17,7 +17,7 @@ public class CategoryServiceImp implements CategoryService {
 
     @Override
     public List<CategoryEntity> getAllCategories() {
-        return categoryRepository.findAll();
+        return categoryRepository.findAllByOrderByIdAsc();
     }
 
     @Override

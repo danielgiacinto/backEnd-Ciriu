@@ -78,38 +78,35 @@ public class ProductServiceImp implements ProductService {
         }
 
         // Paginación
-        int pageSize = 6;
+        int pageSize = 9;
         int totalElements = filteredProducts.size();
+        List<ProductResponseDto> pageResponse = new ArrayList<>();
+        if(!filteredProducts.isEmpty()){
+            // Calcular el número total de páginas
+            int totalPages = (int) Math.ceil((double) totalElements / pageSize);
 
-        // Calcular el número total de páginas
-        int totalPages = (int) Math.ceil((double) totalElements / pageSize);
+            // Asegurar que la página esté dentro de los límites válidos
+            page = Math.min(Math.max(page, 0), totalPages - 1);
 
-        // Asegurar que la página esté dentro de los límites válidos
-        page = Math.min(Math.max(page, 0), totalPages - 1);
+            // calcula los indices
+            int fromIndex = page * pageSize;
+            int toIndex = Math.min(fromIndex + pageSize, totalElements);
 
-        // calcula los indices
-        int fromIndex = page * pageSize;
-        int toIndex = Math.min(fromIndex + pageSize, totalElements);
+            List<ProductEntity> pageProducts = filteredProducts.subList(fromIndex, toIndex);
 
-        List<ProductEntity> pageProducts = filteredProducts.subList(fromIndex, toIndex);
+            pageResponse = pageProducts.stream()
+                    .map(productEntity -> {
+                        ProductResponseDto productResponseDto = modelMapper.map(productEntity, ProductResponseDto.class);
+                        // Extraer las URLs de las imágenes y agregarlas al ProductResponseDto
+                        List<String> imageUrls = productEntity.getImages().stream()
+                                .map(ImageEntity::getUrl)
+                                .collect(Collectors.toList());
+                        productResponseDto.setImage(imageUrls);
+                        return productResponseDto;
+                    })
+                    .collect(Collectors.toList());
+        }
 
-        // Convertir la lista paginada de ProductEntity a una lista de ProductResponseDto
-//        List<ProductResponseDto> pageResponse = pageProducts.stream()
-//                .map(productEntity -> modelMapper.map(productEntity, ProductResponseDto.class))
-//                .collect(Collectors.toList());
-// Convertir la lista paginada de ProductEntity a una lista de ProductResponseDto
-        // Convertir la lista paginada de ProductEntity a una lista de ProductResponseDto
-        List<ProductResponseDto> pageResponse = pageProducts.stream()
-                .map(productEntity -> {
-                    ProductResponseDto productResponseDto = modelMapper.map(productEntity, ProductResponseDto.class);
-                    // Extraer las URLs de las imágenes y agregarlas al ProductResponseDto
-                    List<String> imageUrls = productEntity.getImages().stream()
-                            .map(ImageEntity::getUrl)
-                            .collect(Collectors.toList());
-                    productResponseDto.setImage(imageUrls);
-                    return productResponseDto;
-                })
-                .collect(Collectors.toList());
         return new PageImpl<>(pageResponse, PageRequest.of(page, pageSize), totalElements);
     }
 
@@ -132,7 +129,7 @@ public class ProductServiceImp implements ProductService {
     public ProductResponseDto createToy(ToyRequestDto toy) {
         try {
             CategoryEntity categoryEntity = categoryRepository.getReferenceById(toy.getCategory());
-            SubCategoryEntity subCategoryEntity = subCategoryJpaRepository.getReferenceById(toy.getSub_category());
+            SubCategoryEntity subCategoryEntity = subCategoryJpaRepository.getReferenceById(toy.getSubcategory());
             BrandEntity brandEntity = brandJpaRepository.getReferenceById(toy.getBrand());
             ProductEntity productEntity = new ProductEntity();
             UUID id = UUID.randomUUID();
