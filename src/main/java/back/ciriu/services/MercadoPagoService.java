@@ -16,6 +16,5 @@ public interface MercadoPagoService {
 
     Preference createPreference(OrderDataRequest orderData, String idempotencyKey) throws MPException, MPApiException;
 
-//    Boolean verifyWebhook(String dataId, String xRequestId, String xSignature);
     ResponseEntity<Void> webhookNotification(String dataId) throws JsonProcessingException;
 }

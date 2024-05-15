@@ -3,10 +3,7 @@ package back.ciriu.services.imp;
 import back.ciriu.entities.*;
 import back.ciriu.models.Request.OrderDetailRequest;
 import back.ciriu.models.Request.OrderRequest;
-import back.ciriu.models.Response.OrderDetailsResponse;
-import back.ciriu.models.Response.OrderResponse;
-import back.ciriu.models.Response.ProductResponseDetail;
-import back.ciriu.models.Response.UserResponse;
+import back.ciriu.models.Response.*;
 import back.ciriu.repositories.*;
 import back.ciriu.services.OrderService;
 import jakarta.persistence.EntityNotFoundException;
@@ -15,6 +12,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -239,5 +237,68 @@ public class OrderServiceImp implements OrderService {
             responses.add(orderResponse);
         }
         return responses;
+    }
+
+    @Override
+    public ReportResponse consultReport(LocalDateTime fromDate, LocalDateTime toDate) {
+        List<OrderEntity> orders;
+        HashMap<String, Integer> methodPayments = new HashMap<>();
+        HashMap<String, Integer> productCount = new HashMap<>();
+        int contEfectivo = 0;
+        int contTarjetaDebito = 0;
+        int contTarjetaCredito = 0;
+        int contDineroCuenta = 0;
+        ReportResponse response = new ReportResponse();
+        if(fromDate != null && toDate != null && fromDate.isBefore(toDate)){
+            StatusEntity status = new StatusEntity(1L, "Aprobado");
+            orders = orderJpaRepository.findByDateBetweenAndStatus(fromDate, toDate, status);
+        } else {
+            throw new RuntimeException("Debe ingresar fechas validas para hacer la consulta de reportes");
+        }
+        // Total de ordenes por fechas
+        response.setTotalOrders(orders.size());
+        BigDecimal totalSales = new BigDecimal(0);
+        for(OrderEntity o : orders){
+            if(o.getFormat_payment().equals("pagofacil") || o.getFormat_payment().equals("rapipago")){
+                contEfectivo++;
+            } else if(o.getFormat_payment().equals("credit_card")){
+                contTarjetaCredito++;
+            } else if(o.getFormat_payment().equals("account_money")){
+                contDineroCuenta++;
+            } else if (o.getFormat_payment().equals("debit_card")){
+                contTarjetaDebito++;
+            }
+            for(OrderDetailEntity od : o.getOrderDetails()){
+                // Convierte el valor de od.getQuantity() a BigDecimal antes de la multiplicación
+                BigDecimal quantity = new BigDecimal(od.getQuantity());
+                // Realiza la multiplicación y suma el resultado al total de ventas
+                totalSales = totalSales.add(quantity.multiply(od.getPrice()));
+
+                String code = od.getProduct().getCode();
+                productCount.put(code, productCount.getOrDefault(code, 0) + od.getQuantity());
+            }
+        }
+        // Monto total de ventas
+        response.setSales(totalSales);
+        // Valores de los metodos de pago
+        methodPayments.put("Efectivo", contEfectivo);
+        methodPayments.put("Tarjeta de Credito", contTarjetaCredito);
+        methodPayments.put("Dinero en cuenta", contDineroCuenta);
+        methodPayments.put("Tarjeta de Debito", contTarjetaDebito);
+        response.setMethodpayment(methodPayments);
+
+        // Encuentra el producto más vendido
+        String codeProduct = null;
+        int mostQuantity = 0;
+        for (Map.Entry<String, Integer> entry : productCount.entrySet()) {
+            if (codeProduct == null || entry.getValue() > mostQuantity) {
+                codeProduct = entry.getKey();
+                mostQuantity = entry.getValue();
+            }
+        }
+        // Establece el producto más vendido en la respuesta
+        ProductTopResponse productTopResponse = new ProductTopResponse(codeProduct, mostQuantity);
+        response.setProductTop(productTopResponse);
+        return response;
     }
 }

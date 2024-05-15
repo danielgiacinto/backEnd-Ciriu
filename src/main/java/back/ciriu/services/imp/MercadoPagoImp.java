@@ -83,7 +83,7 @@ public class MercadoPagoImp implements MercadoPagoService {
                 .backUrls(backUrls)
                 .shipments(shipments)
                 .autoReturn("approved")
-                .notificationUrl("https://0cef-181-31-21-71.ngrok-free.app/webhook")
+                .notificationUrl("https://12c3-181-31-21-71.ngrok-free.app/webhook")
                 .build();
 
         // Crea la preferencia

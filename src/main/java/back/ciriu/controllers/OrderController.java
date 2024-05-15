@@ -3,6 +3,7 @@ package back.ciriu.controllers;
 import back.ciriu.entities.OrderEntity;
 import back.ciriu.models.Request.OrderRequest;
 import back.ciriu.models.Response.OrderResponse;
+import back.ciriu.models.Response.ReportResponse;
 import back.ciriu.services.OrderService;
 import jakarta.validation.Valid;
 import org.apache.coyote.Response;
@@ -38,5 +39,11 @@ public class OrderController {
     @PostMapping("/new")
     public ResponseEntity<OrderResponse> createOrder(@RequestBody @Valid OrderRequest request) {
         return ResponseEntity.ok(orderService.createOrder(request));
+    }
+
+    @GetMapping("/report")
+    public ResponseEntity<ReportResponse> consultReports(@RequestParam(value = "fromDate", required = true) @DateTimeFormat(pattern = "dd/MM/yyyy") LocalDateTime fromDate,
+                                                         @RequestParam(value = "toDate", required = true) @DateTimeFormat(pattern = "dd/MM/yyyy") LocalDateTime toDate) {
+        return ResponseEntity.ok(orderService.consultReport(fromDate, toDate));
     }
 }
