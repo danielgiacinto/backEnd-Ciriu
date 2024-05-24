@@ -13,10 +13,10 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @RestController
 @RequestMapping("/orders")
@@ -45,5 +45,10 @@ public class OrderController {
     public ResponseEntity<ReportResponse> consultReports(@RequestParam(value = "fromDate", required = true) @DateTimeFormat(pattern = "dd/MM/yyyy") LocalDateTime fromDate,
                                                          @RequestParam(value = "toDate", required = true) @DateTimeFormat(pattern = "dd/MM/yyyy") LocalDateTime toDate) {
         return ResponseEntity.ok(orderService.consultReport(fromDate, toDate));
+    }
+
+    @GetMapping("/report/month/{year}")
+    public ResponseEntity<Map<String, List<BigDecimal>>> consultReportBar(@PathVariable @Valid Integer year) {
+        return ResponseEntity.ok(orderService.consultReportBar(year));
     }
 }

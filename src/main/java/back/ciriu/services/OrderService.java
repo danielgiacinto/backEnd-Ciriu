@@ -6,10 +6,10 @@ import back.ciriu.models.Response.OrderResponse;
 import back.ciriu.models.Response.ReportResponse;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public interface OrderService {
@@ -21,4 +21,6 @@ public interface OrderService {
     List<OrderResponse> getAllOrderByIdUser(UUID id);
 
     ReportResponse consultReport(LocalDateTime fromDate, LocalDateTime toDate);
+
+    Map<String, List<BigDecimal>> consultReportBar(Integer year);
 }

@@ -13,8 +13,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.text.Collator;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Month;
+import java.time.format.TextStyle;
 import java.util.*;
 
 @Service
@@ -28,6 +31,9 @@ public class OrderServiceImp implements OrderService {
 
     @Autowired
     private UserJpaRepository userJpaRepository;
+
+    @Autowired
+    private CategoryRepository categoryRepository;
 
     @Autowired
     private ShippingJpaRepository shippingJpaRepository;
@@ -91,6 +97,19 @@ public class OrderServiceImp implements OrderService {
             } else {
                 orderResponse.setFormat_payment(oE.getFormat_payment());
             }
+            if(oE.getFormat_method().equals("amex")){
+                orderResponse.setFormat_method("American Express");
+            } else if(oE.getFormat_method().equals("debvisa")) {
+                orderResponse.setFormat_method("Visa");
+            } else if (oE.getFormat_method().equals("account_money")) {
+                orderResponse.setFormat_method("Mercado pago");
+            } else if(oE.getFormat_method().equals("master")){
+                orderResponse.setFormat_method("Mastercard");
+            } else if(oE.getFormat_method().equals("cash")) {
+                orderResponse.setFormat_method("Efectivo");
+            } else {
+                orderResponse.setFormat_method(oE.getFormat_method());
+            }
             orderResponse.setShipping(oE.getShipping().getShipping());
 
             List<OrderDetailsResponse> orderDetailsResponseList = new ArrayList<>();
@@ -127,6 +146,7 @@ public class OrderServiceImp implements OrderService {
             order.setUser(userEntity);
         }
         order.setFormat_payment(request.getFormat_payment());
+        order.setFormat_method(request.getFormat_method());
         order.setId_payment(request.getId_payment());
         ShippingEntity shippingEntity = shippingJpaRepository.getReferenceById(request.getId_shipping());
         if(shippingEntity.getId() == null) {
@@ -175,6 +195,7 @@ public class OrderServiceImp implements OrderService {
         response.setUser(userResponse);
         response.setId_payment(orderEntitySaved.getId_payment());
         response.setFormat_payment(orderEntitySaved.getFormat_payment());
+        response.setFormat_method(orderEntitySaved.getFormat_method());
         response.setShipping(orderEntitySaved.getShipping().getShipping());
         List<OrderDetailsResponse> orderDetailsResponseList = new ArrayList<>();
         for(OrderDetailEntity oDE : orderEntitySaved.getOrderDetails()) {
@@ -222,6 +243,19 @@ public class OrderServiceImp implements OrderService {
             } else {
                 orderResponse.setFormat_payment(oE.getFormat_payment());
             }
+            if(oE.getFormat_method().equals("amex")){
+                orderResponse.setFormat_method("American Express");
+            } else if(oE.getFormat_method().equals("debvisa")) {
+                orderResponse.setFormat_method("Visa");
+            } else if (oE.getFormat_method().equals("account_money")) {
+                orderResponse.setFormat_method("Mercado pago");
+            } else if(oE.getFormat_method().equals("master")){
+                orderResponse.setFormat_method("Mastercard");
+            } else if(oE.getFormat_method().equals("cash")) {
+                orderResponse.setFormat_method("Efectivo");
+            } else {
+                orderResponse.setFormat_method(oE.getFormat_method());
+            }
             orderResponse.setShipping(oE.getShipping().getShipping());
 
             List<OrderDetailsResponse> orderDetailsResponseList = new ArrayList<>();
@@ -242,12 +276,12 @@ public class OrderServiceImp implements OrderService {
     @Override
     public ReportResponse consultReport(LocalDateTime fromDate, LocalDateTime toDate) {
         List<OrderEntity> orders;
-        HashMap<String, Integer> methodPayments = new HashMap<>();
+        HashMap<String, BigDecimal> methodPayments = new HashMap<>();
         HashMap<String, Integer> productCount = new HashMap<>();
-        int contEfectivo = 0;
-        int contTarjetaDebito = 0;
-        int contTarjetaCredito = 0;
-        int contDineroCuenta = 0;
+        BigDecimal totalEfectivo = new BigDecimal(0);
+        BigDecimal totalTarjetaDebito = new BigDecimal(0);
+        BigDecimal totalTarjetaCredito = new BigDecimal(0);
+        BigDecimal totalDineroCuenta = new BigDecimal(0);
         ReportResponse response = new ReportResponse();
         if(fromDate != null && toDate != null && fromDate.isBefore(toDate)){
             StatusEntity status = new StatusEntity(1L, "Aprobado");
@@ -259,19 +293,17 @@ public class OrderServiceImp implements OrderService {
         response.setTotalOrders(orders.size());
         BigDecimal totalSales = new BigDecimal(0);
         for(OrderEntity o : orders){
-            if(o.getFormat_payment().equals("pagofacil") || o.getFormat_payment().equals("rapipago")){
-                contEfectivo++;
-            } else if(o.getFormat_payment().equals("credit_card")){
-                contTarjetaCredito++;
-            } else if(o.getFormat_payment().equals("account_money")){
-                contDineroCuenta++;
-            } else if (o.getFormat_payment().equals("debit_card")){
-                contTarjetaDebito++;
-            }
             for(OrderDetailEntity od : o.getOrderDetails()){
-                // Convierte el valor de od.getQuantity() a BigDecimal antes de la multiplicación
                 BigDecimal quantity = new BigDecimal(od.getQuantity());
-                // Realiza la multiplicación y suma el resultado al total de ventas
+                if(o.getFormat_payment().equals("pagofacil") || o.getFormat_payment().equals("rapipago")){
+                    totalEfectivo = totalEfectivo.add(quantity.multiply(od.getPrice()));
+                } else if(o.getFormat_payment().equals("credit_card")){
+                    totalTarjetaCredito = totalTarjetaCredito.add(quantity.multiply(od.getPrice()));
+                } else if(o.getFormat_payment().equals("account_money")){
+                    totalDineroCuenta = totalDineroCuenta.add(quantity.multiply(od.getPrice()));
+                } else if (o.getFormat_payment().equals("debit_card")) {
+                    totalTarjetaDebito = totalTarjetaDebito.add(quantity.multiply(od.getPrice()));
+                }
                 totalSales = totalSales.add(quantity.multiply(od.getPrice()));
 
                 String code = od.getProduct().getCode();
@@ -281,10 +313,10 @@ public class OrderServiceImp implements OrderService {
         // Monto total de ventas
         response.setSales(totalSales);
         // Valores de los metodos de pago
-        methodPayments.put("Efectivo", contEfectivo);
-        methodPayments.put("Tarjeta de Credito", contTarjetaCredito);
-        methodPayments.put("Dinero en cuenta", contDineroCuenta);
-        methodPayments.put("Tarjeta de Debito", contTarjetaDebito);
+        methodPayments.put("Efectivo", totalEfectivo);
+        methodPayments.put("Tarjeta de Credito", totalTarjetaCredito);
+        methodPayments.put("Dinero en cuenta", totalDineroCuenta);
+        methodPayments.put("Tarjeta de Debito", totalTarjetaDebito);
         response.setMethodpayment(methodPayments);
 
         // Encuentra el producto más vendido
@@ -301,4 +333,62 @@ public class OrderServiceImp implements OrderService {
         response.setProductTop(productTopResponse);
         return response;
     }
+
+    @Override
+    public Map<String, List<BigDecimal>> consultReportBar(Integer year) {
+        LocalDateTime fromDate = LocalDateTime.of(year, 1, 1, 0, 0);
+        LocalDateTime toDate = LocalDateTime.of(year, 12, 31, 23, 59);
+        StatusEntity status = new StatusEntity(1L, "Aprobado");
+        List<OrderEntity> orders = orderJpaRepository.findByDateBetweenAndStatus(fromDate, toDate, status);
+        Map<String, Map<Month, BigDecimal>> salesByCategory = new HashMap<>();
+
+        // Lista de categorías (asegúrate de tener estas categorías disponibles)
+        List<CategoryEntity> categoryEntities = categoryRepository.findAll();
+        List<String> categories = new ArrayList<>();
+        for(CategoryEntity c : categoryEntities){
+            categories.add(c.getCategory());
+        }
+
+
+        // Inicializa el mapa con las categorías y meses
+        for (String category : categories) {
+            Map<Month, BigDecimal> monthlySales = new EnumMap<>(Month.class);
+            for (Month month : Month.values()) {
+                monthlySales.put(month, BigDecimal.ZERO);
+            }
+            salesByCategory.put(category, monthlySales);
+        }
+
+        // Suma las ventas totales para cada categoría y mes
+        for (OrderEntity order : orders) {
+            LocalDateTime orderDate = order.getDate();
+            Month month = orderDate.getMonth();
+
+            for (OrderDetailEntity detail : order.getOrderDetails()) {
+                String category = detail.getProduct().getCategoryEntity().getCategory();
+                BigDecimal quantity = new BigDecimal(detail.getQuantity());
+                BigDecimal subtotal = quantity.multiply(detail.getPrice());
+
+                if (salesByCategory.containsKey(category)) {
+                    BigDecimal totalSales = salesByCategory.get(category).get(month);
+                    totalSales = totalSales.add(subtotal);
+                    salesByCategory.get(category).put(month, totalSales);
+                }
+            }
+        }
+
+        // Prepara la estructura de datos para devolver
+        Map<String, List<BigDecimal>> result = new HashMap<>();
+        for (String category : categories) {
+            List<BigDecimal> data = new ArrayList<>();
+            Map<Month, BigDecimal> monthlySales = salesByCategory.get(category);
+            for (Month month : Month.values()) {
+                data.add(monthlySales.get(month));
+            }
+            result.put(category, data);
+        }
+
+        return result;
+    }
+
 }

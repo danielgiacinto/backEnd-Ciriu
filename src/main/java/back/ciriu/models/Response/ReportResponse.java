@@ -20,7 +20,7 @@ public class ReportResponse {
     @NotNull
     private Integer totalOrders;
 
-    private HashMap<String, Integer> methodpayment;
+    private HashMap<String, BigDecimal> methodpayment;
 
     private ProductTopResponse productTop;
 }

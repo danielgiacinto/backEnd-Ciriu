@@ -23,4 +23,5 @@ public interface OrderJpaRepository extends JpaRepository<OrderEntity, UUID> {
 
     // Filtrar por estado
     List<OrderEntity> findByStatus(StatusEntity status);
+
 }

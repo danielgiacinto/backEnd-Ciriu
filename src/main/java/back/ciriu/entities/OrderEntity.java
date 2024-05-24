@@ -45,6 +45,9 @@ public class OrderEntity {
     @Column
     private String format_payment;
 
+    @Column
+    private String format_method;
+
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "order")
     @JsonIgnoreProperties("order")
     private List<OrderDetailEntity> orderDetails;

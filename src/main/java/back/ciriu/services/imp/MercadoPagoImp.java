@@ -83,7 +83,7 @@ public class MercadoPagoImp implements MercadoPagoService {
                 .backUrls(backUrls)
                 .shipments(shipments)
                 .autoReturn("approved")
-                .notificationUrl("https://12c3-181-31-21-71.ngrok-free.app/webhook")
+                .notificationUrl("https://d221-200-91-50-188.ngrok-free.app/webhook")
                 .build();
 
         // Crea la preferencia
@@ -118,8 +118,8 @@ public class MercadoPagoImp implements MercadoPagoService {
 
             String id_user = (String) payer.get("first_name");
             String id_shipping = (String) payer.get("last_name");
-            String payment_method = (String) paymentData.get("payment_type_id");
-            String paymentType = (String) paymentData.get("payment_method_id");
+            String format_payment = (String) paymentData.get("payment_type_id");
+            String format_method = (String) paymentData.get("payment_method_id");
             if(status.equals("pending")) {
                 orderRequest.setStatus(2L);
             } else if(status.equals("approved")) {
@@ -130,10 +130,12 @@ public class MercadoPagoImp implements MercadoPagoService {
             orderRequest.setDate(LocalDateTime.now());
             orderRequest.setId_user(UUID.fromString(id_user));
             orderRequest.setId_payment(dataId);
-            if(payment_method.equals("ticket")) {
-                orderRequest.setFormat_payment(paymentType);
+            if(format_payment.equals("ticket")) {
+                orderRequest.setFormat_payment(format_method);
+                orderRequest.setFormat_method("cash");
             } else {
-                orderRequest.setFormat_payment(payment_method);
+                orderRequest.setFormat_payment(format_payment);
+                orderRequest.setFormat_method(format_method);
             }
             if(id_shipping.equals("Retiro en local")) {
                 orderRequest.setId_shipping(2L);

@@ -34,5 +34,8 @@ public class OrderRequest {
     private String format_payment;
 
     @NotNull
+    private String format_method;
+
+    @NotNull
     private List<OrderDetailRequest> orderDetails;
 }
