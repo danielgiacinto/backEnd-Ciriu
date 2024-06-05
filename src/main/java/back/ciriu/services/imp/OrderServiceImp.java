@@ -6,19 +6,25 @@ import back.ciriu.models.Request.OrderRequest;
 import back.ciriu.models.Response.*;
 import back.ciriu.repositories.*;
 import back.ciriu.services.OrderService;
+import jakarta.mail.internet.MimeMessage;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
-
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
 import java.math.BigDecimal;
-import java.text.Collator;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
-import java.time.format.TextStyle;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
+
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 
 @Service
 public class OrderServiceImp implements OrderService {
@@ -43,6 +49,12 @@ public class OrderServiceImp implements OrderService {
 
     @Autowired
     private ModelMapper modelMapper;
+
+    @Autowired
+    private JavaMailSender javaMailSender;
+
+    @Autowired
+    private TemplateEngine templateEngine;
     @Override
     public List<OrderResponse> getAllOrders(LocalDateTime fromDate, LocalDateTime toDate, Long status) {
         List<OrderEntity> orderEntities;
@@ -174,6 +186,7 @@ public class OrderServiceImp implements OrderService {
             }
             orderEntitySaved.setOrderDetails(listOrderDetail);
             orderJpaRepository.save(orderEntitySaved);
+            sendMailOrder(orderEntitySaved);
         }
         // Respuesta
         OrderResponse response = new OrderResponse();
@@ -207,6 +220,48 @@ public class OrderServiceImp implements OrderService {
         }
         response.setOrderDetails(orderDetailsResponseList);
         return response;
+    }
+
+    private void sendMailOrder(OrderEntity orderEntitySaved) {
+        try {
+            MimeMessage message = javaMailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setTo(orderEntitySaved.getUser().getEmail());
+            helper.setSubject("Gracias por tu compra en Ciriú !!");
+            // Calcular el total
+            BigDecimal total = orderEntitySaved.getOrderDetails().stream()
+                    .map(detail -> detail.getPrice().multiply(BigDecimal.valueOf(detail.getQuantity())))
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            // Procesar la plantilla Thymeleaf
+            Context context = new Context();
+            context.setVariable("user", orderEntitySaved.getUser().getName() + " " + orderEntitySaved.getUser().getLastname());
+            context.setVariable("id", orderEntitySaved.getId_payment());
+            context.setVariable("status", orderEntitySaved.getStatus().getStatus());
+            context.setVariable("date", orderEntitySaved.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")));
+            context.setVariable("shipping", orderEntitySaved.getShipping().getShipping());
+            context.setVariable("address", orderEntitySaved.getUser().getAddress());
+            context.setVariable("city", orderEntitySaved.getUser().getCity());
+            context.setVariable("province", orderEntitySaved.getUser().getProvince().getProvince());
+            context.setVariable("phone", orderEntitySaved.getUser().getPhone());
+
+            List<OrderDetailsResponse> orderDetails = orderEntitySaved.getOrderDetails().stream().map(oDe -> {
+                OrderDetailsResponse orderDetailsResponse = new OrderDetailsResponse();
+                orderDetailsResponse.setPrice(oDe.getPrice());
+                orderDetailsResponse.setQuantity(oDe.getQuantity());
+                orderDetailsResponse.setProduct(modelMapper.map(oDe.getProduct(), ProductResponseDetail.class));
+                return orderDetailsResponse;
+            }).toList();
+
+            context.setVariable("orderDetails", orderDetails);
+            context.setVariable("total", total);
+            String contenidoHtml = templateEngine.process("emailOrder", context);
+            helper.setText(contenidoHtml, true);
+            javaMailSender.send(message);
+        }catch (Exception e) {
+            throw new RuntimeException("Error al enviar el correo: " + e.getMessage());
+        }
+
     }
 
     @Override

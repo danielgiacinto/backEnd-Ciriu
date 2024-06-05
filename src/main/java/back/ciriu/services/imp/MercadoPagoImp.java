@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.util.JSONPObject;
 import com.mercadopago.client.common.IdentificationRequest;
 import com.mercadopago.client.preference.*;
+import com.mercadopago.core.MPRequestOptions;
 import com.mercadopago.exceptions.MPApiException;
 import com.mercadopago.exceptions.MPException;
 import com.mercadopago.resources.preference.Preference;
@@ -76,6 +77,17 @@ public class MercadoPagoImp implements MercadoPagoService {
                 .mode(orderData.getShippmentMode())
                 .build();
 
+        // Idempotency
+        Map<String, String> customHeaders = new HashMap<>();
+        customHeaders.put("X-Idempotency-Key", idempotencyKey);
+        MPRequestOptions requestOptions = MPRequestOptions.builder()
+                .accessToken(accessToken)
+                .connectionRequestTimeout(2000)
+                .connectionTimeout(2000)
+                .socketTimeout(2000)
+                .customHeaders(customHeaders)
+                .build();
+
         // Construye la preferencia
         PreferenceRequest preferenceRequest = PreferenceRequest.builder()
                 .items(items)
@@ -83,12 +95,12 @@ public class MercadoPagoImp implements MercadoPagoService {
                 .backUrls(backUrls)
                 .shipments(shipments)
                 .autoReturn("approved")
-                .notificationUrl("https://d221-200-91-50-188.ngrok-free.app/webhook")
+                .notificationUrl("https://6b2d-181-31-21-71.ngrok-free.app/webhook")
                 .build();
 
         // Crea la preferencia
         PreferenceClient client = new PreferenceClient();
-        Preference preference = client.create(preferenceRequest);
+        Preference preference = client.create(preferenceRequest, requestOptions);
         return preference;
     }
 

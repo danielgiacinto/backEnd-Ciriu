@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>¡Gracias por tu compra en Ciriú!</title>
+    <style>
+        th {
+            padding: 10px;
+            border: 1px solid #ccc;
+            text-align: left;
+        }
+        td{
+            padding: 10px;
+            border: 1px solid #ccc;
+            text-align: center;
+        }
+        p{
+            justify-content: start;
+            align-content: start;
+        }
+    </style>
+</head>
+<body>
+<h1>¡Gracias por tu compra en Ciriú!</h1>
+<p>Hola, <span th:text="${user}">[Nombre]</span>, tu pedido ha sido recibido con éxito. Aquí están los detalles de tu compra.</p>
+
+<h2>Detalles del Pedido</h2>
+<p><strong>ID Pago:</strong> <span th:text="${id}">[ID Pago]</span></p>
+<p><strong>Fecha:</strong> <span th:text="${date}">[Fecha]</span></p>
+<p><strong>Estado de Pago:</strong> <span th:text="${status}">[Estado]</span></p>
+<p><strong>Cliente:</strong> <span th:text="${user}">[Cliente]</span></p>
+<p><strong>Forma de Envío:</strong> <span th:text="${shipping}">[Forma de Envío]</span></p>
+<p><strong>Productos:</strong></p>
+<table style="border-collapse: collapse; width: auto; margin-bottom: 10px">
+    <thead>
+    <tr>
+        <th>Nombre</th>
+        <th>Cantidad</th>
+        <th>Precio</th>
+        <th>SubTotal</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="detail : ${orderDetails}">
+        <td th:text="${detail.product.name}">[Nombre Producto]</td>
+        <td th:text="${detail.quantity}">[Cantidad]</td>
+        <td th:text="'$' + ${detail.price}">[Precio]</td>
+        <td th:text="'$' + (${detail.quantity} * ${detail.price})">[SubTotal]</td>
+    </tr>
+    </tbody>
+</table>
+<p class="total"><strong>Total:</strong> <span th:text="'$' + ${total}">[Total]</span></p>
+
+<p><strong>Envío a domicilio: </strong>En el caso de haber elegido esta opción, el pedido será enviado a la siguiente
+    dirección al momento de haber hecho la compra, nos contactaremos contigo para coordinar el envío.</p>
+<p>Dirección: <span th:text="${address} + ', ' + ${city} + ', ' + ${province}">[Dirección]</span></p>
+
+<p><strong>Retiro en local: </strong>En el caso de haber elegido esta opción, podrás retirar el pedido en el horario
+    de atención de nuestro local, de Lunes a Viernes: 08:00 a 12:00 y de 16:00 a 20:00.
+    Sábados: 08:00 a 12:00. Calle Italia 136, Hernando, Córdoba, Argentina.</p>
+<p>Esperamos que disfrutes tu compra.</p>
+</body>
+</html>
