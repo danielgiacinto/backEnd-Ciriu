@@ -10,6 +10,9 @@ import back.ciriu.repositories.StockDetailJpaRepository;
 import back.ciriu.services.StockDetailService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -51,7 +54,7 @@ public class StockDetailServiceImp implements StockDetailService {
     }
 
     @Override
-    public List<StockDetailResponse> getAllMovements(LocalDateTime fromDate, LocalDateTime toDate, String movement) {
+    public Page<StockDetailResponse> getAllMovements(Integer page, LocalDateTime fromDate, LocalDateTime toDate, String movement) {
         List<StockDetailEntity> stockDetailEntities;
         if(fromDate != null && toDate != null && !movement.isEmpty()) {
             stockDetailEntities = stockDetailJpaRepository.findByDateBetweenAndMovement(fromDate, toDate, movement);
@@ -69,6 +72,16 @@ public class StockDetailServiceImp implements StockDetailService {
         for (StockDetailEntity sD : stockDetailEntities){
             responses.add(modelMapper.map(sD, StockDetailResponse.class));
         }
-        return responses;
+        int pageSize = 10;
+        int totalElements = responses.size();
+        List<StockDetailResponse> responseList = new ArrayList<>();
+        if(!responses.isEmpty()) {
+            int totalPages = (int) Math.ceil((double) totalElements / pageSize);
+            page = Math.min(Math.max(page, 0), totalPages - 1);
+            int fromIndex = page * pageSize;
+            int toIndex = Math.min(fromIndex + pageSize, totalElements);
+            responseList = responses.subList(fromIndex, toIndex);
+        }
+        return new PageImpl<>(responseList, PageRequest.of(page, pageSize), totalElements);
     }
 }

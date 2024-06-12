@@ -11,6 +11,9 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -48,6 +51,9 @@ public class OrderServiceImp implements OrderService {
     private ProductJpaRepository productJpaRepository;
 
     @Autowired
+    private DeliveryStatusJpaRepository deliveryStatusJpaRepository;
+
+    @Autowired
     private ModelMapper modelMapper;
 
     @Autowired
@@ -56,9 +62,10 @@ public class OrderServiceImp implements OrderService {
     @Autowired
     private TemplateEngine templateEngine;
     @Override
-    public List<OrderResponse> getAllOrders(LocalDateTime fromDate, LocalDateTime toDate, Long status) {
+    public Page<OrderResponse> getAllOrders(Integer page, LocalDateTime fromDate, LocalDateTime toDate, Long status) {
         List<OrderEntity> orderEntities;
         StatusEntity statusEntity = null;
+        DeliveryStatusEntity deliveryStatus = null;
         if (status != 0) {
             statusEntity = statusJpaRepository.getReferenceById(status);
         }
@@ -86,6 +93,7 @@ public class OrderServiceImp implements OrderService {
             OrderResponse orderResponse = new OrderResponse();
             orderResponse.setId(oE.getId());
             orderResponse.setStatus(oE.getStatus().getStatus());
+            orderResponse.setDelivery_status(oE.getDelivery_status().getDelivery_status());
             orderResponse.setDate(oE.getDate());
             UserResponse userResponse = new UserResponse();
             userResponse.setName(oE.getUser().getName());
@@ -136,7 +144,17 @@ public class OrderServiceImp implements OrderService {
 
             responses.add(orderResponse);
         }
-        return responses;
+        int pageSize = 10;
+        int totalElements = responses.size();
+        List<OrderResponse> responseList = new ArrayList<>();
+        if(!responses.isEmpty()) {
+            int totalPages = (int) Math.ceil((double) totalElements / pageSize);
+            page = Math.min(Math.max(page, 0), totalPages - 1);
+            int fromIndex = page * pageSize;
+            int toIndex = Math.min(fromIndex + pageSize, totalElements);
+            responseList = responses.subList(fromIndex, toIndex);
+        }
+        return new PageImpl<>(responseList, PageRequest.of(page, pageSize), totalElements);
     }
 
     @Override
@@ -151,6 +169,8 @@ public class OrderServiceImp implements OrderService {
             order.setStatus(statusEntity);
         }
         order.setDate(request.getDate());
+        DeliveryStatusEntity deliveryStatus = deliveryStatusJpaRepository.getReferenceById(1L);
+        order.setDelivery_status(deliveryStatus);
         UserEntity userEntity = userJpaRepository.getUserEntityById(request.getId_user());
         if(userEntity.getId() == null) {
             throw new EntityNotFoundException("No existe ese usuario");
@@ -222,6 +242,25 @@ public class OrderServiceImp implements OrderService {
         return response;
     }
 
+    @Override
+    public Boolean updateOrder(UUID id, Long id_status, Long id_delivery_status) {
+        OrderEntity order = orderJpaRepository.getReferenceById(id);
+        if(order.getId() == null){
+            throw new RuntimeException("No existe la orden");
+        } else {
+            StatusEntity status = statusJpaRepository.getReferenceById(id_status);
+            DeliveryStatusEntity deliveryStatus = deliveryStatusJpaRepository.getReferenceById(id_delivery_status);
+            if (status.getStatus() != null && deliveryStatus.getDelivery_status() != null) {
+                order.setDelivery_status(deliveryStatus);
+                order.setStatus(status);
+                orderJpaRepository.save(order);
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+
     private void sendMailOrder(OrderEntity orderEntitySaved) {
         try {
             MimeMessage message = javaMailSender.createMimeMessage();
@@ -265,7 +304,7 @@ public class OrderServiceImp implements OrderService {
     }
 
     @Override
-    public List<OrderResponse> getAllOrderByIdUser(UUID id) {
+    public Page<OrderResponse> getAllOrderByIdUser(Integer page, UUID id) {
         List<OrderEntity> orderEntities = orderJpaRepository.getOrderEntityByUserId(id);
 
         // Ordenar las ordenes de forma descendente
@@ -275,6 +314,7 @@ public class OrderServiceImp implements OrderService {
             OrderResponse orderResponse = new OrderResponse();
             orderResponse.setId(oE.getId());
             orderResponse.setStatus(oE.getStatus().getStatus());
+            orderResponse.setDelivery_status(oE.getDelivery_status().getDelivery_status());
             orderResponse.setDate(oE.getDate());
             UserResponse userResponse = new UserResponse();
             userResponse.setName(oE.getUser().getName());
@@ -325,7 +365,17 @@ public class OrderServiceImp implements OrderService {
 
             responses.add(orderResponse);
         }
-        return responses;
+        int pageSize = 10;
+        int totalElements = responses.size();
+        List<OrderResponse> responseList = new ArrayList<>();
+        if(!responses.isEmpty()) {
+            int totalPages = (int) Math.ceil((double) totalElements / pageSize);
+            page = Math.min(Math.max(page, 0), totalPages - 1);
+            int fromIndex = page * pageSize;
+            int toIndex = Math.min(fromIndex + pageSize, totalElements);
+            responseList = responses.subList(fromIndex, toIndex);
+        }
+        return new PageImpl<>(responseList, PageRequest.of(page, pageSize), totalElements);
     }
 
     @Override

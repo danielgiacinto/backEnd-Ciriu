@@ -4,6 +4,7 @@ import back.ciriu.entities.OrderEntity;
 import back.ciriu.models.Request.OrderRequest;
 import back.ciriu.models.Response.OrderResponse;
 import back.ciriu.models.Response.ReportResponse;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -14,11 +15,12 @@ import java.util.*;
 @Service
 public interface OrderService {
 
-    List<OrderResponse> getAllOrders(LocalDateTime fromDate, LocalDateTime toDate, Long status);
+    Page<OrderResponse> getAllOrders(Integer page, LocalDateTime fromDate, LocalDateTime toDate, Long status);
 
     OrderResponse createOrder(OrderRequest orderRequest);
 
-    List<OrderResponse> getAllOrderByIdUser(UUID id);
+    Boolean updateOrder(UUID id, Long id_status, Long id_delivery_status);
+    Page<OrderResponse> getAllOrderByIdUser(Integer page, UUID id);
 
     ReportResponse consultReport(LocalDateTime fromDate, LocalDateTime toDate);
 

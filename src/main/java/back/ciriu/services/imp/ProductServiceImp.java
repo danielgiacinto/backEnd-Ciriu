@@ -106,7 +106,6 @@ public class ProductServiceImp implements ProductService {
                     })
                     .collect(Collectors.toList());
         }
-
         return new PageImpl<>(pageResponse, PageRequest.of(page, pageSize), totalElements);
     }
 

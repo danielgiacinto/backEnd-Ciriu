@@ -27,6 +27,10 @@ public class OrderEntity {
     @ManyToOne
     private StatusEntity status;
 
+    @JoinColumn(name = "id_delivery_status")
+    @ManyToOne
+    private DeliveryStatusEntity delivery_status;
+
     @Column
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDateTime date;

@@ -22,6 +22,9 @@ public class OrderResponse {
     private String status;
 
     @NotNull
+    private String delivery_status;
+
+    @NotNull
     @JsonFormat(pattern = "dd-MM-yyyy HH:mm")
     private LocalDateTime date;
 
