@@ -8,6 +8,7 @@ import back.ciriu.models.Response.StockDetailResponse;
 import back.ciriu.repositories.ProductJpaRepository;
 import back.ciriu.repositories.StockDetailJpaRepository;
 import back.ciriu.services.StockDetailService;
+import jakarta.persistence.EntityNotFoundException;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -37,7 +38,7 @@ public class StockDetailServiceImp implements StockDetailService {
         try {
             ProductEntity productEntity = productJpaRepository.getByCodeAndActiveTrue(request.getCode_product());
             if(productEntity == null) {
-                throw new RuntimeException("No existe el codigo de producto");
+                throw new EntityNotFoundException("No existe el código de producto.");
             } else {
                 StockDetailEntity stockDetailEntity = new StockDetailEntity();
                 stockDetailEntity.setMovement(request.getMovement());
@@ -48,7 +49,7 @@ public class StockDetailServiceImp implements StockDetailService {
                 return true;
             }
         } catch (Exception e) {
-            throw new RuntimeException("Error en el ingreso o egreso del movimiento, " + e.getMessage());
+            throw new EntityNotFoundException("Error al registrar el movimiento, intente nuevamente.");
         }
 
     }

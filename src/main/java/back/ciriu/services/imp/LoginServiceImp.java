@@ -65,10 +65,10 @@ public class LoginServiceImp implements LoginService {
                 response.setRol(userEntity.getRol());
                 return response;
             } else {
-                throw new EntityNotFoundException("Contraseña incorrecta");
+                throw new EntityNotFoundException("Contraseña incorrecta.");
             }
         }
-        throw new EntityNotFoundException("No se encuentra el usuario");
+        throw new EntityNotFoundException("No se encuentra o no existe el usuario.");
     }
 
     @Override
@@ -97,10 +97,10 @@ public class LoginServiceImp implements LoginService {
                     return verifyReponse;
 
                 } catch (Exception ex) {
-                    throw new RuntimeException("No se pudo crear el nuevo usuario");
+                    throw new EntityNotFoundException("No se pudo crear el nuevo usuario.");
                 }
         } else {
-            throw new EntityNotFoundException("Error no se encuentra la cuenta, registrese primero");
+            throw new EntityNotFoundException("Error no se encuentra la cuenta, registrese primero.");
         }
     }
 
@@ -121,7 +121,7 @@ public class LoginServiceImp implements LoginService {
 
                     // Procesar la plantilla Thymeleaf
                     Context context = new Context();
-                    context.setVariable("mensaje", "codigo: " + verificationCode);
+                    context.setVariable("codigo", verificationCode);
                     String contenidoHtml = templateEngine.process("email", context);
                     helper.setText(contenidoHtml, true);
 
@@ -139,7 +139,7 @@ public class LoginServiceImp implements LoginService {
                     verifyResponse.setCode(verificationCode.toString());
                     return verifyResponse;
                 } catch (Exception e) {
-                    throw new RuntimeException("Error al enviar el correo: " + e.getMessage(), e);
+                    throw new EntityNotFoundException("Error al enviar el correo: " + e.getMessage(), e);
                 }
             }
             else {
@@ -147,7 +147,7 @@ public class LoginServiceImp implements LoginService {
             }
         }
         else {
-            throw new EntityNotFoundException("Ya existe ese correo, utilize otro");
+            throw new EntityNotFoundException("Ya existe ese correo, utilize otro.");
         }
 
     }

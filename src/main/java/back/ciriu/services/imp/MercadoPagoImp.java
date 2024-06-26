@@ -68,8 +68,8 @@ public class MercadoPagoImp implements MercadoPagoService {
         // Construye las backUrls
         PreferenceBackUrlsRequest backUrls =
                 PreferenceBackUrlsRequest.builder()
-                        .success("http://localhost:4200/products")
-                        .pending("http://localhost:4200/contact")
+                        .success("http://localhost:4200/success")
+                        .pending("http://localhost:4200/pending")
                         .failure("http://localhost:4200/about")
                         .build();
 
@@ -95,7 +95,7 @@ public class MercadoPagoImp implements MercadoPagoService {
                 .backUrls(backUrls)
                 .shipments(shipments)
                 .autoReturn("approved")
-                .notificationUrl("https://6b2d-181-31-21-71.ngrok-free.app/webhook")
+                .notificationUrl("https://3328-190-114-208-144.ngrok-free.app/webhook")
                 .build();
 
         // Crea la preferencia
