@@ -78,7 +78,7 @@ public class ProductServiceImp implements ProductService {
         }
 
         // Paginación
-        int pageSize = 8;
+        int pageSize = 12;
         int totalElements = filteredProducts.size();
         List<ProductResponseDto> pageResponse = new ArrayList<>();
         if(!filteredProducts.isEmpty()){

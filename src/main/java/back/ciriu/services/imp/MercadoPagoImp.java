@@ -77,6 +77,15 @@ public class MercadoPagoImp implements MercadoPagoService {
                 .mode(orderData.getShippmentMode())
                 .build();
 
+        // Exlusion de metodo de pago en efectivo
+        List<PreferencePaymentTypeRequest> excludedPaymentTypes = new ArrayList<>();
+        excludedPaymentTypes.add(PreferencePaymentTypeRequest.builder().id("ticket").build());
+        PreferencePaymentMethodsRequest paymentMethods =
+                PreferencePaymentMethodsRequest.builder()
+                        .excludedPaymentTypes(excludedPaymentTypes)
+                        .installments(6)
+                        .build();
+
         // Idempotency
         Map<String, String> customHeaders = new HashMap<>();
         customHeaders.put("X-Idempotency-Key", idempotencyKey);
@@ -90,12 +99,13 @@ public class MercadoPagoImp implements MercadoPagoService {
 
         // Construye la preferencia
         PreferenceRequest preferenceRequest = PreferenceRequest.builder()
+                .paymentMethods(paymentMethods)
                 .items(items)
                 .payer(payer)
                 .backUrls(backUrls)
                 .shipments(shipments)
                 .autoReturn("approved")
-                .notificationUrl("https://3328-190-114-208-144.ngrok-free.app/webhook")
+                .notificationUrl("https://43d0-200-126-133-3.ngrok-free.app/webhook")
                 .build();
 
         // Crea la preferencia
