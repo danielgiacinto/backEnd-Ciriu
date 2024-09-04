@@ -54,6 +54,9 @@ public class OrderServiceImp implements OrderService {
     private DeliveryStatusJpaRepository deliveryStatusJpaRepository;
 
     @Autowired
+    private GiftJpaRepository giftJpaRepository;
+
+    @Autowired
     private ModelMapper modelMapper;
 
     @Autowired
@@ -108,6 +111,14 @@ public class OrderServiceImp implements OrderService {
             userResponse.setEmail(oE.getUser().getEmail());
             orderResponse.setUser(userResponse);
             orderResponse.setId_payment(oE.getId_payment());
+            GiftResponse giftResponse = new GiftResponse();
+            GiftEntity giftEntity = giftJpaRepository.getOrderEntityByOrderId(oE.getId());
+            if(giftEntity != null) {
+                giftResponse.setBy(giftEntity.getBy());
+                giftResponse.setDestination(giftEntity.getDestination());
+                giftResponse.setMessage(giftEntity.getMessage());
+            }
+            orderResponse.setGift(giftResponse);
             if(oE.getFormat_payment().equals("credit_card")) {
                 orderResponse.setFormat_payment("Tarjeta de credito");
             } else if(oE.getFormat_payment().equals("debit_card")) {
@@ -303,80 +314,7 @@ public class OrderServiceImp implements OrderService {
 
     }
 
-    @Override
-    public Page<OrderResponse> getAllOrderByIdUser(Integer page, UUID id) {
-        List<OrderEntity> orderEntities = orderJpaRepository.getOrderEntityByUserId(id);
 
-        // Ordenar las ordenes de forma descendente
-        orderEntities.sort(Comparator.comparing(OrderEntity::getDate).reversed());
-        List<OrderResponse> responses = new ArrayList<>();
-        for(OrderEntity oE : orderEntities) {
-            OrderResponse orderResponse = new OrderResponse();
-            orderResponse.setId(oE.getId());
-            orderResponse.setStatus(oE.getStatus().getStatus());
-            orderResponse.setDelivery_status(oE.getDelivery_status().getDelivery_status());
-            orderResponse.setDate(oE.getDate());
-            UserResponse userResponse = new UserResponse();
-            userResponse.setName(oE.getUser().getName());
-            userResponse.setLastname(oE.getUser().getLastname());
-            userResponse.setAddress(oE.getUser().getAddress());
-            userResponse.setCountry(oE.getUser().getCountry().getId());
-            userResponse.setProvince(oE.getUser().getProvince().getId());
-            userResponse.setCity(oE.getUser().getCity());
-            userResponse.setFloor(oE.getUser().getFloor());
-            userResponse.setDepartament(oE.getUser().getDepartament());
-            userResponse.setPhone(oE.getUser().getPhone());
-            userResponse.setEmail(oE.getUser().getEmail());
-            orderResponse.setUser(userResponse);
-            orderResponse.setId_payment(oE.getId_payment());
-            if(oE.getFormat_payment().equals("credit_card")) {
-                orderResponse.setFormat_payment("Tarjeta de credito");
-            } else if(oE.getFormat_payment().equals("debit_card")) {
-                orderResponse.setFormat_payment("Tarjeta de debito");
-            } else if (oE.getFormat_payment().equals("account_money")) {
-                orderResponse.setFormat_payment("Dinero en cuenta");
-            } else {
-                orderResponse.setFormat_payment(oE.getFormat_payment());
-            }
-            if(oE.getFormat_method().equals("amex")){
-                orderResponse.setFormat_method("American Express");
-            } else if(oE.getFormat_method().equals("debvisa")) {
-                orderResponse.setFormat_method("Visa");
-            } else if (oE.getFormat_method().equals("account_money")) {
-                orderResponse.setFormat_method("Mercado pago");
-            } else if(oE.getFormat_method().equals("master")){
-                orderResponse.setFormat_method("Mastercard");
-            } else if(oE.getFormat_method().equals("cash")) {
-                orderResponse.setFormat_method("Efectivo");
-            } else {
-                orderResponse.setFormat_method(oE.getFormat_method());
-            }
-            orderResponse.setShipping(oE.getShipping().getShipping());
-
-            List<OrderDetailsResponse> orderDetailsResponseList = new ArrayList<>();
-            for(OrderDetailEntity oDE : oE.getOrderDetails()) {
-                OrderDetailsResponse orderDetailsResponse = new OrderDetailsResponse();
-                orderDetailsResponse.setPrice(oDE.getPrice());
-                orderDetailsResponse.setQuantity(oDE.getQuantity());
-                orderDetailsResponse.setProduct(modelMapper.map(oDE.getProduct(), ProductResponseDetail.class));
-                orderDetailsResponseList.add(orderDetailsResponse);
-            }
-            orderResponse.setOrderDetails(orderDetailsResponseList);
-
-            responses.add(orderResponse);
-        }
-        int pageSize = 10;
-        int totalElements = responses.size();
-        List<OrderResponse> responseList = new ArrayList<>();
-        if(!responses.isEmpty()) {
-            int totalPages = (int) Math.ceil((double) totalElements / pageSize);
-            page = Math.min(Math.max(page, 0), totalPages - 1);
-            int fromIndex = page * pageSize;
-            int toIndex = Math.min(fromIndex + pageSize, totalElements);
-            responseList = responses.subList(fromIndex, toIndex);
-        }
-        return new PageImpl<>(responseList, PageRequest.of(page, pageSize), totalElements);
-    }
 
     @Override
     public ReportResponse consultReport(LocalDateTime fromDate, LocalDateTime toDate) {
@@ -495,5 +433,6 @@ public class OrderServiceImp implements OrderService {
 
         return result;
     }
+
 
 }

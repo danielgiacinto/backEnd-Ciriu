@@ -2,6 +2,7 @@ package back.ciriu.controllers;
 
 import back.ciriu.entities.OrderEntity;
 import back.ciriu.models.Request.OrderRequest;
+import back.ciriu.models.Response.GiftResponse;
 import back.ciriu.models.Response.OrderResponse;
 import back.ciriu.models.Response.ReportResponse;
 import back.ciriu.services.OrderService;
@@ -27,18 +28,15 @@ public class OrderController {
     private OrderService orderService;
 
     @GetMapping("")
-    public ResponseEntity<Page<OrderResponse>> getAllOrders(@RequestParam(defaultValue = "0") Integer page,
+    public ResponseEntity<Page<OrderResponse>> getAllOrders(
+                                                            @RequestHeader(value = "Authorization") String token,
+                                                            @RequestParam(defaultValue = "0") Integer page,
                                                             @RequestParam(value = "fromDate", required = false) @DateTimeFormat(pattern = "dd/MM/yyyy") LocalDateTime fromDate,
                                                             @RequestParam(value = "toDate", required = false) @DateTimeFormat(pattern = "dd/MM/yyyy") LocalDateTime toDate,
                                                             @RequestParam(defaultValue = "0") Long status) {
         return ResponseEntity.ok(orderService.getAllOrders(page, fromDate, toDate, status));
     }
 
-    @GetMapping("/user/{id}")
-    public ResponseEntity<Page<OrderResponse>> getAllOrderByIdUser(@RequestParam(defaultValue = "0") Integer page,
-                                                                   @PathVariable UUID id) {
-        return ResponseEntity.ok(orderService.getAllOrderByIdUser(page, id));
-    }
     @PostMapping("/new")
     public ResponseEntity<OrderResponse> createOrder(@RequestBody @Valid OrderRequest request) {
         return ResponseEntity.ok(orderService.createOrder(request));

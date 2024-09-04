@@ -2,6 +2,7 @@ package back.ciriu.services;
 
 import back.ciriu.entities.OrderEntity;
 import back.ciriu.models.Request.OrderRequest;
+import back.ciriu.models.Response.GiftResponse;
 import back.ciriu.models.Response.OrderResponse;
 import back.ciriu.models.Response.ReportResponse;
 import org.springframework.data.domain.Page;
@@ -20,9 +21,9 @@ public interface OrderService {
     OrderResponse createOrder(OrderRequest orderRequest);
 
     Boolean updateOrder(UUID id, Long id_status, Long id_delivery_status);
-    Page<OrderResponse> getAllOrderByIdUser(Integer page, UUID id);
 
     ReportResponse consultReport(LocalDateTime fromDate, LocalDateTime toDate);
 
     Map<String, List<BigDecimal>> consultReportBar(Integer year);
+
 }

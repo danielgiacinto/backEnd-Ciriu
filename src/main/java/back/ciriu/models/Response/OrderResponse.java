@@ -31,6 +31,8 @@ public class OrderResponse {
     @NotNull
     private UserResponse user;
 
+    private GiftResponse gift;
+
     @NotNull
     private String id_payment;
 
@@ -42,6 +44,7 @@ public class OrderResponse {
 
     @NotNull
     private String format_method;
+
 
     @NotNull
     private List<OrderDetailsResponse> orderDetails;

@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -26,6 +27,7 @@ import io.jsonwebtoken.security.Keys;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
+import java.util.Date;
 import java.util.UUID;
 
 @Service
@@ -46,6 +48,9 @@ public class LoginServiceImp implements LoginService {
     @Autowired
     private VerifyJpaRepository verifyJpaRepository;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
 
     @Value("${jwt-secret}")
     private String secretKey;
@@ -53,12 +58,14 @@ public class LoginServiceImp implements LoginService {
     public LoginResponse login(LoginRequestDto request) {
         LoginEntity userEntity = loginJpaRepository.getLoginEntityByEmail(request.getEmail());
         if(userEntity != null) {
-            if(request.getPassword().equals(userEntity.getPassword())) {
+            if(passwordEncoder.matches(request.getPassword(), userEntity.getPassword())) {
                 String token = Jwts.builder()
                         .setSubject((userEntity.getEmail()))
                         .claim("rol", userEntity.getRol())
+                        .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24))
                         .signWith(Keys.hmacShaKeyFor(secretKey.getBytes()), SignatureAlgorithm.HS512)
                         .compact();
+                System.out.println("Generated Token: " + token);
                 LoginResponse response = new LoginResponse();
                 response.setToken(token);
                 response.setId(userEntity.getId());
@@ -131,7 +138,7 @@ public class LoginServiceImp implements LoginService {
                     verifyEntity.setName(request.getNameSignUp());
                     verifyEntity.setLastname(request.getLastnameSignUp());
                     verifyEntity.setEmail(request.getEmailSignUp());
-                    verifyEntity.setPassword(request.getPasswordSignUp());
+                    verifyEntity.setPassword(passwordEncoder.encode(request.getPasswordSignUp()));
 
                     verifyJpaRepository.save(verifyEntity);
                     javaMailSender.send(message);

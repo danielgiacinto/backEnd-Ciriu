@@ -16,6 +16,8 @@ public class OrderDataRequest {
 
     private String IdUser;
 
+    private GiftRequest gift;
+
     private List<OrderItemsRequest> items;
 
 }

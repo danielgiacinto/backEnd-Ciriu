@@ -2,11 +2,9 @@ package back.ciriu.repositories;
 
 import back.ciriu.entities.OrderEntity;
 import back.ciriu.entities.StatusEntity;
-import back.ciriu.models.Response.OrderResponse;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -23,5 +21,7 @@ public interface OrderJpaRepository extends JpaRepository<OrderEntity, UUID> {
 
     // Filtrar por estado
     List<OrderEntity> findByStatus(StatusEntity status);
+
+    OrderEntity getOrderEntityById(UUID id);
 
 }

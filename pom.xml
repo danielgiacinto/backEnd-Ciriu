@@ -83,6 +83,11 @@
 			<version>0.12.5</version>
 			<scope>runtime</scope>
 		</dependency>
+		<!-- Dependencia de security para encriptar password -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security</artifactId>
+		</dependency>
 		<!--Libreria de validacion -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

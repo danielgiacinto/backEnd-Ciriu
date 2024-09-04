@@ -47,7 +47,7 @@ public class ProductController {
         return ResponseEntity.ok(productService.deleteProduct(code));
     }
 
-    @PutMapping("update/{code}")
+    @PutMapping("/update/{code}")
     public ResponseEntity<ProductResponseDto> updateProduct(@PathVariable String code, @RequestBody @Valid ToyUpdateRequestDto requestDto) {
         return ResponseEntity.ok(productService.updateToy(code, requestDto));
     }

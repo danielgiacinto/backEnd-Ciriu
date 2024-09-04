@@ -1,9 +1,14 @@
 package back.ciriu.services.imp;
 
+import back.ciriu.entities.GiftEntity;
+import back.ciriu.entities.OrderEntity;
 import back.ciriu.models.Request.OrderDataRequest;
 import back.ciriu.models.Request.OrderDetailRequest;
 import back.ciriu.models.Request.OrderItemsRequest;
 import back.ciriu.models.Request.OrderRequest;
+import back.ciriu.models.Response.OrderResponse;
+import back.ciriu.repositories.GiftJpaRepository;
+import back.ciriu.repositories.OrderJpaRepository;
 import back.ciriu.services.MercadoPagoService;
 
 import back.ciriu.services.OrderService;
@@ -37,6 +42,12 @@ public class MercadoPagoImp implements MercadoPagoService {
     private OrderService orderService;
 
     @Autowired
+    private OrderJpaRepository orderJpaRepository;
+
+    @Autowired
+    private GiftJpaRepository giftJpaRepository;
+
+    @Autowired
     private RestTemplate restTemplate;
 
     @Override
@@ -49,16 +60,15 @@ public class MercadoPagoImp implements MercadoPagoService {
             PreferenceItemRequest itemRequest = PreferenceItemRequest.builder()
                     .id(item.getCode())
                     .title(item.getName())
-                    .description("None")
-                    .pictureUrl("None")
-                    .categoryId("None")
+                    .description(orderData.getGift().getBy() + ", " + orderData.getGift().getDestination())
+                    .pictureUrl("")
+                    .categoryId(orderData.getGift().getMessage())
                     .quantity(item.getQuantity())
                     .currencyId("ARS")
                     .unitPrice(new BigDecimal(String.valueOf(item.getPrice())))
                     .build();
             items.add(itemRequest);
         }
-
         // seteo el identificador en el nombre el id del usuario
         PreferencePayerRequest payer = PreferencePayerRequest.builder()
                 .name(orderData.getIdUser())
@@ -105,7 +115,7 @@ public class MercadoPagoImp implements MercadoPagoService {
                 .backUrls(backUrls)
                 .shipments(shipments)
                 .autoReturn("approved")
-                .notificationUrl("https://43d0-200-126-133-3.ngrok-free.app/webhook")
+                .notificationUrl("https://b9a1-190-231-79-101.ngrok-free.app/webhook")
                 .build();
 
         // Crea la preferencia
@@ -117,7 +127,10 @@ public class MercadoPagoImp implements MercadoPagoService {
     @Override
     public ResponseEntity<Void> webhookNotification(String dataId) throws JsonProcessingException {
         System.out.println("El id es: " + dataId);
-
+        String byAndDestination = "";
+        String by = "";
+        String destination = "";
+        String message = "";
         String apiUrl = "https://api.mercadopago.com/v1/payments/" + dataId;
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer " + accessToken);
@@ -137,6 +150,7 @@ public class MercadoPagoImp implements MercadoPagoService {
 
             // crear la orden para la base de datos
             OrderRequest orderRequest = new OrderRequest();
+            GiftEntity giftEntity = new GiftEntity();
 
             String id_user = (String) payer.get("first_name");
             String id_shipping = (String) payer.get("last_name");
@@ -171,6 +185,11 @@ public class MercadoPagoImp implements MercadoPagoService {
                 String code = (String) item.get("id");
                 String quantity = (String) item.get("quantity");
                 BigDecimal price = new BigDecimal(String.valueOf(item.get("unit_price")));
+                // aca le saco la description para el gift
+                byAndDestination = (String) item.get("description");
+                by = byAndDestination.substring(0, byAndDestination.indexOf(",")).trim();
+                destination = byAndDestination.substring(byAndDestination.indexOf(",") + 1).trim();
+                message = (String) item.get("category_id");
 
                 orderDetail.setCode(code);
                 orderDetail.setQuantity(Integer.valueOf(quantity));
@@ -179,7 +198,17 @@ public class MercadoPagoImp implements MercadoPagoService {
                 orderDetailRequest.add(orderDetail);
             }
             orderRequest.setOrderDetails(orderDetailRequest);
-            orderService.createOrder(orderRequest);
+            OrderResponse orderR = orderService.createOrder(orderRequest);
+            // creo el gift
+            if(by != null && !by.isEmpty() && destination != null && !destination.isEmpty() && message != null && !message.isEmpty()) {
+                giftEntity.setBy(by);
+                giftEntity.setDestination(destination);
+                giftEntity.setMessage(message);
+                OrderEntity orderEntityGift = orderJpaRepository.getOrderEntityById(orderR.getId());
+                giftEntity.setOrder(orderEntityGift);
+                giftJpaRepository.save(giftEntity);
+            }
+
         } else {
             System.out.println("Error al obtener información del pago");
         }
