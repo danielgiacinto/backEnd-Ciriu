@@ -1,0 +1,40 @@
+version: '3.9'
+
+services:
+  app-ciriu:
+    container_name: container-ciriu
+    image: img-ciriu:tag
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    depends_on:
+      - db_postgres
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db_postgres:5432/db_ciriu
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: 123456
+    restart: always
+    networks:
+      - my-network
+
+  db_postgres:
+    container_name: container-db
+    image: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: db_ciriu
+    restart: always
+    networks:
+      - my-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  my-network:
+    driver: bridge

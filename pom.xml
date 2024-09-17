@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>back</groupId>
 	<artifactId>ciriu</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.1</version>
 	<name>ciriu</name>
 	<description>Demo project for Spring Boot</description>
 	<properties>
