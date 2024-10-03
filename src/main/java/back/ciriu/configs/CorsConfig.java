@@ -13,9 +13,10 @@ public class CorsConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins("http://localhost:4200")
-                        .allowedMethods("GET", "POST", "PUT", "DELETE")
-                        .allowedHeaders("*"); // Headers permitidos
+                        .allowedOriginPatterns("https://ciriu-hp0kyma3n-danielgiacintos-projects.vercel.app", "https://ciriu.vercel.app", "http://localhost:4200/") // Cambiado de allowedOrigins a allowedOriginPatterns
+                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                        .allowedHeaders("*")
+                        .allowCredentials(true);
             }
         };
     }

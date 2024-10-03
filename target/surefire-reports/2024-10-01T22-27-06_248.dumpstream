@@ -1,0 +1,5 @@
+# Created at 2024-10-01T22:27:06.450
+Boot Manifest-JAR contains absolute paths in classpath 'D:\Documentos\DANIEL\Programacion UTN\Tesis Ciriu\backEnd-Ciriu\target\test-classes'
+Hint: <argLine>-Djdk.net.URLClassPath.disableClassPathURLCheck=true</argLine>
+'other' has different root
+

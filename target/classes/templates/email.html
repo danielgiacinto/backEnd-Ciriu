@@ -44,7 +44,7 @@
     <h1>¡Verifique su cuenta de Ciriú!</h1>
     <img src="https://i.imgur.com/cJYitFL.jpeg" alt="logo">
     <p>Por favor, haga click en el siguiente enlace para verificar su cuenta.</p>
-    <p><a th:href="@{'http://localhost:4200/login/verify/' + ${codigo}}" target="_blank">Verificar cuenta</a></p>
+    <p><a th:href="@{${url} + '/' + ${codigo}}" target="_blank">Verificar cuenta</a></p>
 </div>
 </body>
 </html>

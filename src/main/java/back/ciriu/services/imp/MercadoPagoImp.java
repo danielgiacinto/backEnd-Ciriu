@@ -38,6 +38,18 @@ public class MercadoPagoImp implements MercadoPagoService {
     @Value("${mercadopago.access-token}")
     private String accessToken;
 
+    @Value("${mercadopago.succes}")
+    private String succes;
+
+    @Value("${mercadopago.pending}")
+    private String pending;
+
+    @Value("${mercadopago.failure}")
+    private String failure;
+
+    @Value("${notification.url}")
+    private String notificationUrl;
+
     @Autowired
     private OrderService orderService;
 
@@ -78,9 +90,9 @@ public class MercadoPagoImp implements MercadoPagoService {
         // Construye las backUrls
         PreferenceBackUrlsRequest backUrls =
                 PreferenceBackUrlsRequest.builder()
-                        .success("http://localhost:4200/success")
-                        .pending("http://localhost:4200/pending")
-                        .failure("http://localhost:4200/about")
+                        .success(succes)
+                        .pending(pending)
+                        .failure(failure)
                         .build();
 
         PreferenceShipmentsRequest shipments = PreferenceShipmentsRequest.builder()
@@ -115,7 +127,7 @@ public class MercadoPagoImp implements MercadoPagoService {
                 .backUrls(backUrls)
                 .shipments(shipments)
                 .autoReturn("approved")
-                .notificationUrl("https://b9a1-190-231-79-101.ngrok-free.app/webhook")
+                .notificationUrl(notificationUrl)
                 .build();
 
         // Crea la preferencia

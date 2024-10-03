@@ -11,6 +11,7 @@ import back.ciriu.services.PasswordRecoverService;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -40,6 +41,10 @@ public class PasswordRecoverServiceImp implements PasswordRecoverService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Value("${recuperar.password}")
+    private String url;
+
     @Override
     public PasswordRecoverResponse sendPasswordRecoveryEmail(PasswordRecoverRequestDto request) {
         Optional<LoginEntity> userOpt = Optional.ofNullable(loginJpaRepository.getLoginEntityByEmail(request.getEmail()));
@@ -62,6 +67,7 @@ public class PasswordRecoverServiceImp implements PasswordRecoverService {
 
                 Context context = new Context();
                 context.setVariable("token", token);
+                context.setVariable("url", url);
                 String contenidoHtml = templateEngine.process("password_recovery_email", context);
                 helper.setText(contenidoHtml, true);
 

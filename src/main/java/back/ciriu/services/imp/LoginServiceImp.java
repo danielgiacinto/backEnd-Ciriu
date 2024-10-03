@@ -51,6 +51,9 @@ public class LoginServiceImp implements LoginService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Value("${verificar.cuenta}")
+    private String verificarCuenta;
+
 
     @Value("${jwt-secret}")
     private String secretKey;
@@ -129,6 +132,7 @@ public class LoginServiceImp implements LoginService {
                     // Procesar la plantilla Thymeleaf
                     Context context = new Context();
                     context.setVariable("codigo", verificationCode);
+                    context.setVariable("url", verificarCuenta);
                     String contenidoHtml = templateEngine.process("email", context);
                     helper.setText(contenidoHtml, true);
 

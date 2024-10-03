@@ -11,6 +11,7 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -64,6 +65,10 @@ public class OrderServiceImp implements OrderService {
 
     @Autowired
     private TemplateEngine templateEngine;
+
+    @Value("${compra.orden}")
+    private String url;
+
     @Override
     public Page<OrderResponse> getAllOrders(Integer page, LocalDateTime fromDate, LocalDateTime toDate, Long status) {
         List<OrderEntity> orderEntities;
@@ -294,6 +299,7 @@ public class OrderServiceImp implements OrderService {
             context.setVariable("city", orderEntitySaved.getUser().getCity());
             context.setVariable("province", orderEntitySaved.getUser().getProvince().getProvince());
             context.setVariable("phone", orderEntitySaved.getUser().getPhone());
+            context.setVariable("url", url);
 
             List<OrderDetailsResponse> orderDetails = orderEntitySaved.getOrderDetails().stream().map(oDe -> {
                 OrderDetailsResponse orderDetailsResponse = new OrderDetailsResponse();

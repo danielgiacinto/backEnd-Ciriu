@@ -14,6 +14,7 @@ back\ciriu\services\StockDetailService.class
 back\ciriu\services\imp\DeliveryStatusServiceImp.class
 back\ciriu\repositories\StatusJpaRepository.class
 back\ciriu\entities\OrderEntity.class
+back\ciriu\configs\SimpleCORSFilter.class
 back\ciriu\entities\DeliveryStatusEntity.class
 back\ciriu\models\Response\ProductResponseDetail.class
 back\ciriu\services\ProductService.class
